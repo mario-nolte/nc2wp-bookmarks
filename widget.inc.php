@@ -85,7 +85,7 @@ class nc2wpBMwidget extends WP_Widget {
       // kick things off
       extract( $args );
       $connector_checkbox = $instance['connector_checkbox'] ? 'true' : 'false';
-      echo $before_widget;        
+      echo $before_widget;
       echo $before_title . $instance[ 'title' ] . $after_title;     
 	
       // generate Bookmark output
@@ -93,11 +93,11 @@ class nc2wpBMwidget extends WP_Widget {
 
 	
       if(get_option('nc2wpbm_op_type')=='sql'){
-	$bookmarks = getBMfromSQL($tagArray, 'desc');
-      }
+	$bookmarks = nc2wpbm_getBMfromSQL($tagArray, 'desc');
+	 }
       
-      if(get_option('nc2wpbm_op_type')=='ocApp'){
-	$bookmarks = getBMfromOC($tagArray, 'desc');
+      if(get_option('nc2wpbm_op_type')=='ncApp'){
+	$bookmarks = nc2wpbm_getBMfromNC($tagArray, 'desc');
       }
       
       //while the OR connector needs no further operations (all Bookmarks can be deployed in the Widget), the AND connector requires to delete within the $bookmark array all those bookmarks that contain not all Bookmarks
@@ -113,37 +113,37 @@ class nc2wpBMwidget extends WP_Widget {
       // determine the intended output and generate the output
       if(strcmp($instance[ 'addInfo' ], 'onlyTitle')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'><a href ='" . $bookmarks[$i]->link . "' target='_blank'> ".$bookmarks[$i]->title . " </a> </div>";
+	  echo "<div class='nc2wp-row'><a href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> " .esc_html($bookmarks[$i]->title) . " </a> </div>";
 	  }
 	}
 	
       if(strcmp($instance[ 'addInfo' ], 'dateDDMMYYYY')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'><a href ='" . $bookmarks[$i]->link . "' target='_blank'> <span class='nc2wp-date'>" . date("d.m.Y",$bookmarks[$i]->dateLastModified) . "</span>: " . $bookmarks[$i]->title . " </a> </div>";
+	  echo "<div class='nc2wp-row'><a href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> <span class='nc2wp-date'>" . esc_html(date("d.m.Y",$bookmarks[$i]->dateLastModified)) . "</span>: " . esc_html($bookmarks[$i]->title) . " </a> </div>";
 	  }
 	}
 	
       if(strcmp($instance[ 'addInfo' ], 'dateYYYYMMDD')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'><a href ='" . $bookmarks[$i]->link . "' target='_blank'> <span class='nc2wp-date'>" . date("Y-m-d",$bookmarks[$i]->dateLastModified) . "</span>: " . $bookmarks[$i]->title . " </a> </div>";
+	  echo "<div class='nc2wp-row'><a href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> <span class='nc2wp-date'>" . esc_html(date("Y-m-d",$bookmarks[$i]->dateLastModified)) . "</span>: " . esc_html($bookmarks[$i]->title) . " </a> </div>";
 	  }
 	}
 	
       if(strcmp($instance[ 'addInfo' ], 'descriptionText')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'> <span class='nc2wp-row-title'><a href ='" . $bookmarks[$i]->link . "' target='_blank'>".$bookmarks[$i]->title ." </a>: </span> <span class='nc2wp-description'>" . $bookmarks[$i]->description . "</span></div>";
+	  echo "<div class='nc2wp-row'> <span class='nc2wp-row-title'><a href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'>".esc_html(($bookmarks[$i]->title)) ." </a>: </span> <span class='nc2wp-description'>" . esc_html($bookmarks[$i]->description) . "</span></div>";
 	  }
 	}
 	
       if(strcmp($instance[ 'addInfo' ], 'descriptionTitle')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'><a title='". $bookmarks[$i]->description ."' href ='" . $bookmarks[$i]->link . "' target='_blank'> ".$bookmarks[$i]->title . " </a> </div>";
+	  echo "<div class='nc2wp-row'><a title='". esc_html($bookmarks[$i]->description) ."' href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> ".esc_html($bookmarks[$i]->title) . " </a> </div>";
 	  }
 	}
 	
       if(strcmp($instance[ 'addInfo' ], 'tags')==0){ 
 	  for ($i=0; $i<$iterator; $i++){
-	  echo "<div class='nc2wp-row'><a title='". $bookmarks[$i]->description ."' href ='" . $bookmarks[$i]->link . "' target='_blank'> ".$bookmarks[$i]->title . " (" . nc2wpbm_arrayToTagstext($bookmarks[$i]->tags)  .") </a> </div>";
+	  echo "<div class='nc2wp-row'><a title='". esc_html($bookmarks[$i]->description) ."' href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> ".esc_html($bookmarks[$i]->title) . " (" . esc_html(nc2wpbm_arrayToTagstext($bookmarks[$i]->tags))  .") </a> </div>";
 	    $tags = $bookmarks[$i]->tags;
 	  }
 	}

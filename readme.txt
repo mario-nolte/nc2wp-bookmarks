@@ -4,8 +4,8 @@ License: GPLv2 or later
 Donate link: http://www.nolte-netzwerk.de/nc2wp-bookmarks-configuration/#Contribution
 Tags: Nextcloud, owncloud, Bookmarks, api, integration, shortcode, widget, microblogging
 Requires at least: 3.9.2
-Tested up to: 5.0.2
-Stable tag: 1.2.0
+Tested up to: 5.2.3
+Stable tag: 1.3.2
 
 Embed your Bookmarks that are managed by Nextcloud in your WordPress posts and pages as table or as list within widget areas.
 
@@ -74,6 +74,12 @@ Currently I am working to enhance the sorting capabilites. Further suggestions a
 
 
 == Changelog ==
+= 1.3.2 =
+* Enabled update from oc2wp to newer versions
+= 1.3.1 =
+* Fixed widget problems
+* Sanitized and escaped in- and output data
+* added nonce for the configuration page
 = 1.2.0 =
 * Encryption of passwords
 * adapted for PHP 7

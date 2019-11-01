@@ -1,6 +1,6 @@
 <?php
 
-class bookmark {
+class NC2WP_Bookmark {
     /* Attributes */
     private $title;
     private $link;

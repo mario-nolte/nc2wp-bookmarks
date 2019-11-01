@@ -1,7 +1,7 @@
 <?php
 /* 
 Plugin Name: NC2WP Bookmarks
-Version: 1.2.0
+Version: 1.3.2
 Plugin URI: http://www.nolte-netzwerk.de/nc2wp-bookmarks-configuration/
 Description: Use bookmarks that are managed by Nextcloud in WordPress posts and pages as table or as list in widgets
 Author: Mario Nolte
@@ -12,6 +12,7 @@ Licence:  GPLv2
 /* set some default options */
 function nc2wpbm_plugin_install ()
 {
+	add_option('nc2wpbm_dbversion', '1.3.2');
 	add_option('nc2wpbm_table_title_display', '1');
 	add_option('nc2wpbm_table_title_label', 'Title');
 	add_option('nc2wpbm_table_number_display', '-1');
@@ -24,6 +25,11 @@ function nc2wpbm_plugin_install ()
 	add_option('nc2wpbm_table_lastmodified_label', 'Last change');
 	add_option('nc2wpbm_op_type', 'ncApp');
 	add_option('nc2wpbm_nc_server', 'https://REPLACE-THIS-WHITH-YOUR-SERVER.com/nextcloud/');
+	add_option('nc2wpbm_nc_user', 'user');
+	add_option('nc2wpbm_nc_passwordEn', '');
+    add_option('nc2wpbm_sql_database');
+    add_option('nc2wpbm_sql_bmOwner');
+    add_option('nc2wpbm_table_script');
 	}
 	
 register_activation_hook(__FILE__,'nc2wpbm_plugin_install');
@@ -61,10 +67,66 @@ function nc2wpbm_plugin_uninstall ()
       delete_site_option('nc2wpbm_table_lastmodified_display');
       delete_site_option('nc2wpbm_table_lastmodified_label');
       delete_site_option('nc2wpbm_table_script');
+      delete_site_option('nc2wpbm_dbversion');
+
 
 	}
 register_uninstall_hook(__FILE__,'nc2wpbm_plugin_uninstall');
 
+/* check if database needs to be updated and add a version number for executing a systematic update process*/
+add_action('plugins_loaded', 'nc2wpbm_update');
+
+function nc2wpbm_update(){
+ if(get_option('oc2wpbm_op_type')=='ocApp' OR get_option('oc2wpbm_op_type')=='sql'){
+    nc2wpbm_plugin_install ();
+    
+    if(get_option('oc2wpbm_op_type')=='ocApp'){update_option('nc2wpbm_op_type','ncApp');}
+    if(get_option('oc2wpbm_op_type')=='sql'){update_option('nc2wpbm_op_type','sql');}
+    update_option('nc2wpbm_nc_server', get_option('oc2wpbm_oc_server'));
+    update_option('nc2wpbm_nc_user', get_option('oc2wpbm_oc_user'));
+    update_option('nc2wpbm_nc_passwordEn', nc2wpbm_encryptPassword((string)get_option('oc2wpbm_oc_password'), AUTH_KEY));
+    update_option('nc2wpbm_sql_server', get_option('oc2wpbm_sql_server'));
+    update_option('nc2wpbm_sql_user', get_option('oc2wpbm_sql_user'));
+    update_option('nc2wpbm_sql_passwordEn', nc2wpbm_encryptPassword((string)get_option('oc2wpbm_oc_password'), AUTH_KEY));
+    update_option('nc2wpbm_sql_database', get_option('oc2wpbm_sql_database'));
+    update_option('nc2wpbm_sql_bmOwner', get_option('oc2wpbm_sql_bmOwner'));
+    update_option('nc2wpbm_table_styling', get_option('oc2wpbm_table_styling'));
+    update_option('nc2wpbm_table_number_display', get_option('oc2wpbm_table_number_display'));
+    update_option('nc2wpbm_table_number_label', get_option('oc2wpbm_table_number_label'));
+    update_option('nc2wpbm_table_title_display', get_option('oc2wpbm_table_title_display'));
+    update_option('nc2wpbm_table_title_label', get_option('oc2wpbm_table_title_label'));
+    update_option('nc2wpbm_table_description_display', get_option('oc2wpbm_table_description_display'));
+    update_option('nc2wpbm_table_description_label', get_option('oc2wpbm_table_description_label'));
+    update_option('nc2wpbm_table_tags_display', get_option('oc2wpbm_table_tags_display'));
+    update_option('nc2wpbm_table_tags_label', get_option('oc2wpbm_table_tags_label'));
+    update_option('nc2wpbm_table_lastmodified_display', get_option('oc2wpbm_table_lastmodified_display'));
+    update_option('nc2wpbm_table_lastmodified_label', get_option('oc2wpbm_table_lastmodified_label'));
+    update_option('nc2wpbm_table_script', get_option('oc2wpbm_table_script'));
+    
+    delete_site_option('oc2wpbm_oc_server');
+    delete_site_option('oc2wpbm_oc_user');
+    delete_site_option('oc2wpbm_oc_password');
+    delete_site_option('oc2wpbm_sql_server');
+    delete_site_option('oc2wpbm_sql_user');
+    delete_site_option('oc2wpbm_sql_password');
+    delete_site_option('oc2wpbm_sql_database');
+    delete_site_option('oc2wpbm_sql_bmOwner');
+    delete_site_option('oc2wpbm_table_styling');
+    delete_site_option('oc2wpbm_table_number_display');
+    delete_site_option('oc2wpbm_table_number_label');
+    delete_site_option('oc2wpbm_table_title_display');
+    delete_site_option('oc2wpbm_table_title_label');
+    delete_site_option('oc2wpbm_table_description_display');
+    delete_site_option('oc2wpbm_table_description_label');
+    delete_site_option('oc2wpbm_table_tags_display');
+    delete_site_option('oc2wpbm_table_tags_label');
+    delete_site_option('oc2wpbm_table_lastmodified_display');
+    delete_site_option('oc2wpbm_table_lastmodified_label');
+    delete_site_option('oc2wpbm_table_script');
+    delete_site_option('oc2wpbm_op_type');
+    delete_site_option('oc2wpbm_table_script');
+    }
+}
 
 /*import the class file for Bookmark Class*/
 require_once( plugin_dir_path( __FILE__ ) . 'bookmark.inc.php' );
@@ -72,11 +134,11 @@ require_once( plugin_dir_path( __FILE__ ) . 'config_page.inc.php' );
 require_once( plugin_dir_path( __FILE__ ) . 'widget.inc.php' );
 
 /* get bookmarks in accordance to the defined tag and the specified user (as owner of the bookmarks) out of the database and return an array of bookmarks*/
-function getBMfromSQL($tags, $order){
+function nc2wpbm_getBMfromSQL($tags, $order){
   /*configure SQL Server connection data*/
   $sql_server=get_option('nc2wpbm_sql_server');
   $sql_user =$sqlserver=get_option('nc2wpbm_sql_user');
-  $sql_password =$sqlserver=decryptPassword(get_option('nc2wpbm_sql_passwordEn'), AUTH_KEY) ;
+  $sql_password =$sqlserver=nc2wpbm_decryptPassword(get_option('nc2wpbm_sql_passwordEn'), AUTH_KEY) ;
   $nc_database=$sqlserver=get_option('nc2wpbm_sql_database');
   
 
@@ -104,7 +166,7 @@ function getBMfromSQL($tags, $order){
       
   /*create array containing BM objects*/
   for ($i=0; $i<count($res); $i++){
-	$bookmarks[$i]=new bookmark($res[$i] ->title, $res[$i] ->url, $res[$i] ->description, explode(', ', $res[$i] ->tags), $res[$i] ->lastmodified);
+	$bookmarks[$i]=new NC2WP_Bookmark($res[$i] ->title, $res[$i] ->url, $res[$i] ->description, explode(', ', $res[$i] ->tags), $res[$i] ->lastmodified);
 	}
 	
   
@@ -112,19 +174,19 @@ function getBMfromSQL($tags, $order){
 }
 
 /* get bookmarks in accordance to the defined tag out of Nextcloud via the Bookmarks App*/
-function getBMfromNC($tags, $order){
+function nc2wpbm_getBMfromNC($tags, $order){
 
     // setting the tags
     $tagsURL="";
     for($i=0; $i<count($tags);$i++){$tagsURL .="&tags[]=" . $tags[$i];};
 
-    $request = wp_remote_get( get_option('nc2wpbm_nc_server') . '/index.php/apps/bookmarks/public/rest/v1/bookmark?user='. get_option('nc2wpbm_nc_user') . '&password='. decryptPassword(get_option('nc2wpbm_nc_passwordEn'), AUTH_KEY) . $tagsURL .'&select[]=description&select[]=lastmodified&select[]=tags');
+    $request = wp_remote_get( get_option('nc2wpbm_nc_server') . '/index.php/apps/bookmarks/public/rest/v1/bookmark?user='. get_option('nc2wpbm_nc_user') . '&password='. nc2wpbm_decryptPassword(get_option('nc2wpbm_nc_passwordEn'), AUTH_KEY) . $tagsURL .'&select[]=description&select[]=lastmodified&select[]=tags');
     $response = wp_remote_retrieve_body( $request );
 
     $result = json_decode($response);
 
     for ($i=0; $i<count($result); $i++){
-    $bookmarks[$i]=new bookmark($result[$i] ->title, $result[$i] ->url, $result[$i] ->description, $result[$i] ->tags, $result[$i] ->lastmodified);
+    $bookmarks[$i]=new NC2WP_Bookmark($result[$i] ->title, $result[$i] ->url, $result[$i] ->description, $result[$i] ->tags, $result[$i] ->lastmodified);
     }
     return $bookmarks;
 }
@@ -138,7 +200,6 @@ $table_title=get_option('nc2wpbm_table_title_label');
 $table_description=get_option('nc2wpbm_table_description_label');
 $table_tags=get_option('nc2wpbm_table_tags_label');
 $table_lastmodified = get_option('nc2wpbm_table_lastmodified_label');
-$tablescript=stripslashes(get_option('nc2wpbm_table_script'));
 
 $tableoutput ="";
 
@@ -163,6 +224,24 @@ $tableoutput .= "</tr></thead>";
 $tableoutput .= "<tbody>";
 
 if (is_array($bookmarks)) {
+
+//set allowed values for wp_kses (sanitizing description and title coming from nc bookmarks
+$allowed_html = array(
+	'a' => array(
+		'href' => array(),
+		'title' => array(),
+	),
+	'br' => array(),
+	'em' => array(),
+	'strong' => array(),
+);
+
+$allowed_protocols = array(
+	'http' => array(),
+	'https' => array(),
+	'ftp' => array(),
+	'mailto' => array()
+);
 	  
     for ($i=0; $i<count($bookmarks); $i++){
         
@@ -171,18 +250,18 @@ if (is_array($bookmarks)) {
         $tableoutput .= "<td class='column-1'>" . ($i+1) . "</td>";
         }
         if(get_option('nc2wpbm_table_title_display')=='1'){
-        $tableoutput .= "<td class='column-2'> <a href ='" . $bookmarks[$i]->link . "' target='_blank'> ".$bookmarks[$i]->title . "</a> </td>";
+        $tableoutput .= "<td class='column-2'> <a href ='" . esc_url($bookmarks[$i]->link) . "' target='_blank'> ". wp_kses($bookmarks[$i]->title, $allowed_html, $allowed_protocols) . "</a> </td>";
         }
         if(get_option('nc2wpbm_table_description_display')=='1'){
-        $tableoutput .= "<td class='column-3'>" . $bookmarks[$i]->description . " </td>";
+        $tableoutput .= "<td class='column-3'>" . wp_kses($bookmarks[$i]->description, $allowed_html, $allowed_protocols) . " </td>";
         }
         if(get_option('nc2wpbm_table_tags_display')=='1'){
         $tableoutput .= "<td class='column-4'>"; 
-        $tableoutput .= nc2wpbm_arrayToTagstext($bookmarks[$i] ->tags);
+        $tableoutput .= esc_html(nc2wpbm_arrayToTagstext($bookmarks[$i] ->tags));
         $tableoutput .= " </td>";
         }
         if(get_option('nc2wpbm_table_lastmodified_display')=='1'){
-        $tableoutput .= "<td class='column-5'>" . date("Y-m-d", $bookmarks[$i]->dateLastModified) . " </td>";
+        $tableoutput .= "<td class='column-5'>" . esc_html(date("Y-m-d", $bookmarks[$i]->dateLastModified)) . " </td>";
         }
     $tableoutput .= "</tr>";
     }
@@ -236,11 +315,11 @@ function nc2wpbm_shortcode($atts) {
   $tagArray = nc2wpbm_textToTagsArray($shortcodeArray['tags']);
 
   if(get_option('nc2wpbm_op_type')=='sql'){
-    $bookmarks = getBMfromSQL($tagArray, $shortcodeArray['order']);
+    $bookmarks = nc2wpbm_getBMfromSQL($tagArray, $shortcodeArray['order']);
   }
   
   if(get_option('nc2wpbm_op_type')=='ncApp'){
-    $bookmarks = getBMfromNC($tagArray, $shortcodeArray['order']);
+    $bookmarks = nc2wpbm_getBMfromNC($tagArray, $shortcodeArray['order']);
   }
   
   //while the OR connector needs no further operations (all Bookmarks can be deployed in the table), the AND connector requires to delete within the $bookmark array all those bookmarks that contain not all Bookmarks
@@ -253,7 +332,7 @@ function nc2wpbm_shortcode($atts) {
 }
 
 /* Encrypt the passwords used for NC or SQL Access */
-function encryptPassword($data, $key) {
+function nc2wpbm_encryptPassword($data, $key) {
     // Remove the base64 encoding from our key
     $encryption_key = base64_decode($key);
     // Generate an initialization vector
@@ -265,7 +344,7 @@ function encryptPassword($data, $key) {
 }
 
 /* Decrypt the passwords used for NC or SQL Access */
-function decryptPassword($data, $key) {
+function nc2wpbm_decryptPassword($data, $key) {
     // Remove the base64 encoding from our key
     $encryption_key = base64_decode($key);
     // To decrypt, split the encrypted data from our IV - our unique separator used was "::"
@@ -274,8 +353,9 @@ function decryptPassword($data, $key) {
 }
 
 /* Hooks shortcode nc2wpbm into WordPress */
+/* the second shortcode oc2wpbm is for lagacy configurations since the plugin was nameed in accordance to OwnCloud (oc) before */
 add_shortcode('nc2wpbm', 'nc2wpbm_shortcode');
-
+add_shortcode('oc2wpbm', 'nc2wpbm_shortcode');
 
 /* hook configuration page and widget into the wordpress backend */
 function nc2wpbm_plugin_menu() {
