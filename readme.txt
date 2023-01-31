@@ -4,8 +4,8 @@ License: GPLv2 or later
 Donate link: http://www.nolte-netzwerk.de/nc2wp-bookmarks-configuration/#Contribution
 Tags: Nextcloud, owncloud, Bookmarks, api, integration, shortcode, widget, microblogging
 Requires at least: 3.9.2
-Tested up to: 5.2.3
-Stable tag: 1.3.2
+Tested up to: 6.1.1
+Stable tag: 2.0.0
 
 Embed your Bookmarks that are managed by Nextcloud in your WordPress posts and pages as table or as list within widget areas.
 
@@ -62,7 +62,7 @@ Specifying tags in the field 'Tags of bookmarks to be displayed' will list all t
 In the style.css of your theme you can use the classes nc2wp-row, nc2wp-row-title and nc2wp-description to set the layout.
 
 = What are the next steps for this plugin =
-Currently I am working to enhance the sorting capabilites. Further suggestions are welcome!
+The and / or filter for tags does not work properly
 
 
 == Screenshots ==
@@ -74,6 +74,8 @@ Currently I am working to enhance the sorting capabilites. Further suggestions a
 
 
 == Changelog ==
+= 2.0.0 =
+* Adopted to nc Bookmarks REST API v2
 = 1.3.2 =
 * Enabled update from oc2wp to newer versions
 = 1.3.1 =

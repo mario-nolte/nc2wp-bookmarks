@@ -174,21 +174,39 @@ function nc2wpbm_getBMfromSQL($tags, $order){
 }
 
 /* get bookmarks in accordance to the defined tag out of Nextcloud via the Bookmarks App*/
+/* TODO: 
+ * Abfrage je tag, folgende Fälle
+ * - 1 tag --> ein Durchlauf
+ * - >= 2 tag mit UND --> ein Durchlauf
+ * - >= 2 tag mit OR --> Durchlauf je Tag
+ * Ergo: nc2wpbm_getBMfromNC($tag, $order) - nur noch für einen Tag
+ * */
 function nc2wpbm_getBMfromNC($tags, $order){
 
     // setting the tags
     $tagsURL="";
     for($i=0; $i<count($tags);$i++){$tagsURL .="&tags[]=" . $tags[$i];};
+    
+    // for basic auth as required by api v2
+    $url = get_option('nc2wpbm_nc_server') .'/index.php/apps/bookmarks/public/rest/v2/bookmark?&page=-1&conjunction=or'.$tagsURL;
+    print($url);
+    echo '<hr>';
+    
+    $args = array(
+        'headers' => array(
+            'Authorization' => 'Basic ' . base64_encode( get_option('nc2wpbm_nc_user') . ':' . nc2wpbm_decryptPassword(get_option('nc2wpbm_nc_passwordEn'), AUTH_KEY))
+        )
+    );
 
-    $request = wp_remote_get( get_option('nc2wpbm_nc_server') . '/index.php/apps/bookmarks/public/rest/v1/bookmark?user='. get_option('nc2wpbm_nc_user') . '&password='. nc2wpbm_decryptPassword(get_option('nc2wpbm_nc_passwordEn'), AUTH_KEY) . $tagsURL .'&select[]=description&select[]=lastmodified&select[]=tags');
+    $request = wp_remote_request($url, $args);
     $response = wp_remote_retrieve_body( $request );
+    $result = json_decode($response, true);
+    
 
-    $result = json_decode($response);
-
-    for ($i=0; $i<count($result); $i++){
-    $bookmarks[$i]=new NC2WP_Bookmark($result[$i] ->title, $result[$i] ->url, $result[$i] ->description, $result[$i] ->tags, $result[$i] ->lastmodified);
-    }
-    return $bookmarks;
+   foreach($result['data'] as $item){
+     $bookmarks[] = new NC2WP_Bookmark($item['title'], $item['url'], $item['description'], $item['tags'], $item['lastmodified']);
+     }
+    return $bookmarks;  
 }
 
 /* Generates the HTML Code for a table containing bookmark information*/
@@ -309,8 +327,16 @@ function nc2wpbm_arrayToTagstext($tagArray){
 	      $order: ASC = List of Bookmarks is ordered by 'last modified date' ascending (default case) | DESC = List of Bookmarks is ordered by 'last modified date' descending
 
 */
+/* TODO 
+ * if connector==AND
+ * {$bookmarks = nc2wpbm_getBMfromSQL($tagArray,}
+ * 
+ * if connector==OR
+ * {for each tag: $bookmarks append $bookmarks}*/
+
 function nc2wpbm_shortcode($atts) {
   $shortcodeArray = shortcode_atts( array('tags' => 'public', 'connector' => 'OR','order' => 'asc',), $atts );
+  print('Parameter connector: '. $shortcodeArray['connector'] . '<br>');
  
   $tagArray = nc2wpbm_textToTagsArray($shortcodeArray['tags']);
 
